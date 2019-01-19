@@ -8,6 +8,10 @@ object Account {
     def description: String
   }
 
+  case class AccountCreation(accHolderName: String,
+                              balance: Int = 0
+                            ) extends Payload
+
   case class Account(accNumber: String,
                      accHolderName: String,
                      balance: Int

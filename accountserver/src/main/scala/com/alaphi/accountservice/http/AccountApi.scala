@@ -3,10 +3,11 @@ package com.alaphi.accountservice.http
 import cats.effect.IO
 import com.alaphi.accountservice.program.AccountAlgebra
 import com.alaphi.accountservice.http.JsonCodec._
+import com.alaphi.accountservice.model.Account.AccountCreation
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
-class AccountRoutes(accountAlgebra: AccountAlgebra) extends Http4sDsl[IO] {
+class AccountApi(accountAlgebra: AccountAlgebra) extends Http4sDsl[IO] {
 
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO]  {
     case GET -> Root / "accounts" / number =>
@@ -15,6 +16,17 @@ class AccountRoutes(accountAlgebra: AccountAlgebra) extends Http4sDsl[IO] {
         .flatMap {
           _.fold(nf => NotFound(nf.description), acc => Ok(acc))
         }
+
+    case req @ POST -> Root / "accounts" =>
+      req.decode[AccountCreation] { accCreate =>
+        accountAlgebra
+          .create(accCreate)
+          .flatMap(Created(_))
+          .handleErrorWith {
+            case _ => BadRequest()
+          }
+      }
+
   }
 
 }
