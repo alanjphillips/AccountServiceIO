@@ -17,13 +17,18 @@ class AccountApi(accountAlgebra: AccountAlgebra) extends Http4sDsl[IO] {
           _.fold(nf => NotFound(nf.description), acc => Ok(acc))
         }
 
+    case GET -> Root / "accounts" =>
+      accountAlgebra
+        .readAll
+        .flatMap(Ok(_))
+
     case req @ POST -> Root / "accounts" =>
       req.decode[AccountCreation] { accCreate =>
         accountAlgebra
           .create(accCreate)
           .flatMap(Created(_))
           .handleErrorWith {
-            case _ => BadRequest()
+            case err => BadRequest(err.getMessage)
           }
       }
 

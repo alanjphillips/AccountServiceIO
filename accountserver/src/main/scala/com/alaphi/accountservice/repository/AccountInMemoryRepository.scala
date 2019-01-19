@@ -16,4 +16,13 @@ class AccountInMemoryRepository extends AccountRepository {
       IO(Right(Account(accountNumber, "Aaa Baaa", 100)))
   }
 
+  def readAll: IO[Seq[Account]] =
+    IO {
+      Seq(
+        Account("10001", "Aaa Bbbb", 100),
+        Account("10002", "Ccc Dddd", 200),
+        Account("10003", "Eee Ffff", 300)
+      )
+    }
+
 }

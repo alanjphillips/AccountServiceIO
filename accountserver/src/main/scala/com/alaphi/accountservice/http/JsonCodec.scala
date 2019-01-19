@@ -8,4 +8,5 @@ import io.circe.generic.auto._
 object JsonCodec {
   implicit val decoderrAccCreate = jsonOf[IO, AccountCreation]
   implicit val encoderAcc = jsonEncoderOf[IO, Account]
+  implicit val encoderAccs = jsonEncoderOf[IO, Seq[Account]]
 }

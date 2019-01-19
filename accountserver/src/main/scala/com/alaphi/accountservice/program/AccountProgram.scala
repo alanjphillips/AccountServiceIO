@@ -12,4 +12,7 @@ class AccountProgram(accountRepository: AccountRepository) extends AccountAlgebr
   def read(accountNumber: String): IO[Either[AccountError, Account]] =
     accountRepository.read(accountNumber)
 
+  def readAll: IO[Seq[Account]] =
+    accountRepository.readAll
+
 }
