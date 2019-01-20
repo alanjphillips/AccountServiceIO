@@ -22,4 +22,15 @@ object Account {
                              description: String
                             ) extends AccountError with Payload
 
+  case class TransferSuccess(sourceAccNum: String,
+                             destAccNum: String,
+                              transferAmount: Int
+                            ) extends Payload
+
+  case class TransferFailed(sourceAccNum: String,
+                             destAccNum: String,
+                             transferAmount: Int,
+                             description: String
+                           ) extends AccountError with Payload
+
 }
