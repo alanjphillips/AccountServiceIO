@@ -29,22 +29,32 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
   def readAll: IO[Seq[Account]] =
     storage.get.map(_.values.map(_.account).toSeq)
 
+  def deposit(accountNumber: String, amount: Int): EitherT[IO, AccountError, DepositSuccess] = for {
+    accAccess <- getAccountAccess(accountNumber)
+    _ <- accAccess.acquireAccount
+    depositResult <-
+      storage.update(accAccMap =>
+        accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accAccess.account.copy(balance = accAccess.account.balance + amount)))
+      ).map(_ => Right(DepositSuccess(accAccess.account, amount)))
+    _ <- accAccess.releaseAccount
+  } yield depositResult
+
   def transfer(srcAccNum: String, destAccNum: String, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
     accAccessSrc <- getAccountAccess(srcAccNum)
     accAccessDest <- getAccountAccess(destAccNum)
     _ <- accAccessSrc.acquireAccount
     _ <- accAccessDest.acquireAccount
-    transferSuccess <- adjust(accAccessSrc, accAccessDest, amount)
+    transferResult <- adjust(accAccessSrc, accAccessDest, amount)
     _ <- accAccessSrc.releaseAccount
     _ <- accAccessDest.releaseAccount
-  } yield transferSuccess
+  } yield transferResult
 
-  def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): EitherT[IO, TransferFailed, TransferSuccess] = EitherT {
+  private def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): EitherT[IO, TransferFailed, TransferSuccess] = EitherT {
     if (accAccessSrc.account.balance >= amount)
       storage.update(accAccMap =>
         accAccMap
           .updated(accAccessSrc.account.accNumber, accAccessSrc.copy(account = accAccessSrc.account.copy(balance = accAccessSrc.account.balance - amount)))
-          .updated(accAccessDest.account.accNumber, accAccessDest.copy(account = accAccessDest.account.copy(balance = accAccessDest.account.balance - amount)))
+          .updated(accAccessDest.account.accNumber, accAccessDest.copy(account = accAccessDest.account.copy(balance = accAccessDest.account.balance + amount)))
       ).map(_ => Right(TransferSuccess(accAccessSrc.account, accAccessDest.account, amount)))
     else
       IO(Left(TransferFailed(accAccessSrc.account, accAccessDest.account, amount, s"Not enough funds available in account number: ${accAccessSrc.account.accNumber}")))

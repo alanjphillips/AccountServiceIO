@@ -33,4 +33,8 @@ object Account {
                              description: String
                            ) extends AccountError with Payload
 
+  case class DepositSuccess(account: Account,
+                             depositAmount: Int
+                           ) extends Payload
+
 }
