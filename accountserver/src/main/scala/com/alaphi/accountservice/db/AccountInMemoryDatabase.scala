@@ -19,44 +19,48 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
     _ <- storage.update(_.updated(account.accNumber, accountAccess))
   } yield account
 
-  def read(accountNumber: String): EitherT[IO, AccountError, Account] = for {
-    accAccess <- getAccountAccess(accountNumber)
-    _ <- accAccess.acquireAccount
-    acc <- accAccess.account
-    _ <- accAccess.releaseAccount
-  } yield acc
+  def read(accountNumber: String): EitherT[IO, AccountError, Account] =
+    getAccountAccess(accountNumber).map(_.account)
 
   def readAll: IO[Seq[Account]] =
     storage.get.map(_.values.map(_.account).toSeq)
 
   def deposit(accountNumber: String, amount: Int): EitherT[IO, AccountError, DepositSuccess] = for {
     accAccess <- getAccountAccess(accountNumber)
-    _ <- accAccess.acquireAccount
+    _ <- EitherT.right(accAccess.isAvailable.map(avail => println(s"deposit $accountNumber, accAccess.isAvailable: $avail")))
+    _ <- EitherT.right(accAccess.acquireAccount)
+    accountDeposit = accAccess.account.copy(balance = accAccess.account.balance + amount)
     depositResult <-
-      storage.update(accAccMap =>
-        accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accAccess.account.copy(balance = accAccess.account.balance + amount)))
-      ).map(_ => Right(DepositSuccess(accAccess.account, amount)))
-    _ <- accAccess.releaseAccount
+      EitherT[IO, AccountError, DepositSuccess] {
+        storage.update(accAccMap =>
+          accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accountDeposit))
+        ).map(_ => Right(DepositSuccess(accountDeposit, amount)))
+      }
+    _ <- EitherT.right(accAccess.releaseAccount)
   } yield depositResult
 
   def transfer(srcAccNum: String, destAccNum: String, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
     accAccessSrc <- getAccountAccess(srcAccNum)
     accAccessDest <- getAccountAccess(destAccNum)
-    _ <- accAccessSrc.acquireAccount
-    _ <- accAccessDest.acquireAccount
+    _ <- EitherT.right(accAccessSrc.isAvailable.map(avail => println(s"transfer src $srcAccNum, accAccessSrc.isAvailable: $avail")))
+    _ <- EitherT.right(accAccessDest.isAvailable.map(avail => println(s"transfer dest $destAccNum, accAccessDest.isAvailable: $avail")))
+    _ <- EitherT.right(accAccessSrc.acquireAccount)
+    _ <- EitherT.right(accAccessDest.acquireAccount)
     transferResult <- adjust(accAccessSrc, accAccessDest, amount)
-    _ <- accAccessSrc.releaseAccount
-    _ <- accAccessDest.releaseAccount
+    _ <- EitherT.right(accAccessSrc.releaseAccount)
+    _ <- EitherT.right(accAccessDest.releaseAccount)
   } yield transferResult
 
   private def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): EitherT[IO, TransferFailed, TransferSuccess] = EitherT {
-    if (accAccessSrc.account.balance >= amount)
+    if (accAccessSrc.account.balance >= amount) {
+      val accDebit = accAccessSrc.account.copy(balance = accAccessSrc.account.balance - amount)
+      val accCredit = accAccessDest.account.copy(balance = accAccessDest.account.balance + amount)
       storage.update(accAccMap =>
         accAccMap
-          .updated(accAccessSrc.account.accNumber, accAccessSrc.copy(account = accAccessSrc.account.copy(balance = accAccessSrc.account.balance - amount)))
-          .updated(accAccessDest.account.accNumber, accAccessDest.copy(account = accAccessDest.account.copy(balance = accAccessDest.account.balance + amount)))
-      ).map(_ => Right(TransferSuccess(accAccessSrc.account, accAccessDest.account, amount)))
-    else
+          .updated(accAccessSrc.account.accNumber, accAccessSrc.copy(account = accDebit))
+          .updated(accAccessDest.account.accNumber, accAccessDest.copy(account = accCredit))
+      ).map(_ => Right(TransferSuccess(accDebit, accCredit, amount)))
+    } else
       IO(Left(TransferFailed(accAccessSrc.account, accAccessDest.account, amount, s"Not enough funds available in account number: ${accAccessSrc.account.accNumber}")))
   }
 

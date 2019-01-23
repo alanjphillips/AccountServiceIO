@@ -1,28 +1,23 @@
 package com.alaphi.accountservice.repository
 
-import cats.effect.{IO, Sync}
-import com.alaphi.accountservice.model.Account.{Account, AccountCreation, AccountError, AccountNotFound}
+import cats.effect.IO
+import com.alaphi.accountservice.db.AccountInMemoryDatabase
+import com.alaphi.accountservice.model.Account._
 
-class AccountInMemoryRepository extends AccountRepository {
+class AccountInMemoryRepository(db: AccountInMemoryDatabase) extends AccountRepository {
 
-  def create(accountCreation: AccountCreation): IO[Account] = {
-    IO(Account("10001", accountCreation.accHolderName, accountCreation.balance))
-  }
+  def create(accountCreation: AccountCreation): IO[Account] =
+    db.create(accountCreation)
 
-  def read(accountNumber: String): IO[Either[AccountError, Account]] = accountNumber match {
-    case "0000" =>
-      IO(Left(AccountNotFound(accountNumber, s"$accountNumber not exists")))
-    case _ =>
-      IO(Right(Account(accountNumber, "Aaa Baaa", 100)))
-  }
+  def read(accountNumber: String): IO[Either[AccountError, Account]] =
+    db.read(accountNumber).value
 
-  def readAll: IO[Seq[Account]] =
-    IO {
-      Seq(
-        Account("10001", "Aaa Bbbb", 100),
-        Account("10002", "Ccc Dddd", 200),
-        Account("10003", "Eee Ffff", 300)
-      )
-    }
+  def readAll: IO[Seq[Account]] = db.readAll
+
+  def deposit(accountNumber: String, amount: Int): IO[Either[AccountError, DepositSuccess]] =
+    db.deposit(accountNumber, amount).value
+
+  def transfer(srcAccNum: String, destAccNum: String, amount: Int): IO[Either[AccountError, TransferSuccess]] =
+    db.transfer(srcAccNum, destAccNum, amount).value
 
 }
