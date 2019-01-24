@@ -1,16 +1,11 @@
 package com.alaphi.accountservice.db
 
 import cats.data.EitherT
-import cats.effect.{Concurrent, IO, Timer}
+import cats.effect.{Concurrent, ContextShift, IO, Timer}
 import cats.effect.concurrent.{Ref, Semaphore}
 import com.alaphi.accountservice.model.Account._
 
-import scala.concurrent.ExecutionContext
-
-class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess]]) {
-
-  implicit val ctx = IO.contextShift(ExecutionContext.global)
-  implicit val timer = IO.timer(ExecutionContext.global)
+class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess]])(implicit ctx: ContextShift[IO], timer: Timer[IO]) {
 
   def create(accountCreation: AccountCreation): IO[Account] = for {
     accountNumber <- generateAccountNumber
@@ -74,7 +69,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
 }
 
 object AccountInMemoryDatabase {
-  def createDB: IO[AccountInMemoryDatabase] =
+  def createDB(implicit ctx: ContextShift[IO], timer: Timer[IO]): IO[AccountInMemoryDatabase] =
     Ref.of[IO, Map[String, AccountAccess]](Map.empty[String, AccountAccess])
       .map(new AccountInMemoryDatabase(_))
 }
@@ -86,7 +81,7 @@ case class AccountAccess(account: Account, lock: Semaphore[IO]) {
 }
 
 object AccountAccess {
-  def create(account: Account)(implicit concurrent: Concurrent[IO], timer: Timer[IO]): IO[AccountAccess] =
+  def create(account: Account)(implicit ctx: Concurrent[IO], timer: Timer[IO]): IO[AccountAccess] =
     Semaphore[IO](1).map(lock => new AccountAccess(account, lock))
 }
 
