@@ -22,7 +22,7 @@ Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[
 ***
 ```
 Method: Post
-Uri:    http://127.0.0.1:8081/accounts
+Uri:    http://127.0.0.1:8080/accounts
 Header: Content-Type: application/json
 ```
 
@@ -64,7 +64,7 @@ Header: Content-Type: application/json
 ***
 ```
 Method: Post
-Uri:    http://127.0.0.1:8081/accounts/1000/transfer
+Uri:    http://127.0.0.1:8080/accounts/1000/transfer
 Header: Content-Type: application/json
 ```
 
@@ -120,7 +120,7 @@ Account Not Found for source account path param or destination `destAccNum` in j
 ***
 ```
 Method: Post
-Uri:    http://127.0.0.1:8081/accounts/1000/deposit
+Uri:    http://127.0.0.1:8080/accounts/1000/deposit
 Header: Content-Type: application/json
 ```
 
@@ -161,7 +161,7 @@ Account Not Found for destination account number in path param will have Http St
 ***
 ```
 Method: Get
-Uri:    http://127.0.0.1:8081/accounts
+Uri:    http://127.0.0.1:8080/accounts
 Header: Content-Type: application/json
 ```
 
@@ -188,7 +188,7 @@ Header: Content-Type: application/json
 ***
 ```
 Method: Get
-Uri:    http://127.0.0.1:8081/accounts/1000
+Uri:    http://127.0.0.1:8080/accounts/1000
 Header: Content-Type: application/json
 ```
 
