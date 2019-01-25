@@ -22,7 +22,6 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
 
   def deposit(accountNumber: String, amount: Int): EitherT[IO, AccountError, DepositSuccess] = for {
     accAccess <- getAccountAccess(accountNumber)
-    _ <- EitherT.right(accAccess.isAvailable.map(avail => println(s"deposit $accountNumber, accAccess.isAvailable: $avail")))
     _ <- EitherT.right(accAccess.acquireAccount)
     accountDeposit = accAccess.account.copy(balance = accAccess.account.balance + amount)
     depositResult <-
@@ -37,8 +36,6 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
   def transfer(srcAccNum: String, destAccNum: String, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
     accAccessSrc <- getAccountAccess(srcAccNum)
     accAccessDest <- getAccountAccess(destAccNum)
-    _ <- EitherT.right(accAccessSrc.isAvailable.map(avail => println(s"transfer src $srcAccNum, accAccessSrc.isAvailable: $avail")))
-    _ <- EitherT.right(accAccessDest.isAvailable.map(avail => println(s"transfer dest $destAccNum, accAccessDest.isAvailable: $avail")))
     _ <- EitherT.right(accAccessSrc.acquireAccount)
     _ <- EitherT.right(accAccessDest.acquireAccount)
     transferResult <- EitherT {
