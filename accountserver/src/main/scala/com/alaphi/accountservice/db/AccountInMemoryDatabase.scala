@@ -30,7 +30,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
         storage.update(accAccMap =>
           accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accountDeposit))
         ).map(_ => Right(DepositSuccess(accountDeposit, amount)))
-          .guarantee(accAccess.releaseAccount.void)
+          .guarantee(release(accAccess).void)
       }
   } yield depositResult
 
@@ -45,11 +45,6 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
     }
   } yield transferResult
 
-  private def release(accAccessSrc: AccountAccess, accAccessDest: AccountAccess) = for {
-    src <- accAccessSrc.releaseAccount
-    dest <-  accAccessDest.releaseAccount
-  } yield (src, dest)
-
   private def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): IO[Either[AccountError, TransferSuccess]] =
     if (accAccessSrc.account.balance >= amount) {
       val accDebit = accAccessSrc.account.copy(balance = accAccessSrc.account.balance - amount)
@@ -62,6 +57,8 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
     } else
       IO(Left(TransferFailed(accAccessSrc.account, accAccessDest.account, amount, s"Not enough funds available in account number: ${accAccessSrc.account.accNumber}")))
 
+  private def release(accAccess: AccountAccess*): IO[List[Account]] =
+    accAccess.toList.map(_.releaseAccount).sequence
 
   private def getAccountAccess(accountNumber: String): EitherT[IO, AccountError, AccountAccess] = EitherT {
     storage.get.map(_.get(accountNumber).toRight[AccountError](AccountNotFound(accountNumber, s"Account Number doesn't exist: $accountNumber")))
