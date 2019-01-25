@@ -1,6 +1,7 @@
 package com.alaphi.accountservice.db
 
 import cats.data.EitherT
+import cats.implicits._
 import cats.effect.{Concurrent, ContextShift, IO, Timer}
 import cats.effect.concurrent.{Ref, Semaphore}
 import com.alaphi.accountservice.model.Account._
@@ -29,7 +30,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
         storage.update(accAccMap =>
           accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accountDeposit))
         ).map(_ => Right(DepositSuccess(accountDeposit, amount)))
-          .guarantee(accAccess.releaseAccount.map(_ => ()))
+          .guarantee(accAccess.releaseAccount.void)
       }
   } yield depositResult
 
@@ -40,7 +41,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
     _ <- EitherT.right(accAccessDest.acquireAccount)
     transferResult <- EitherT {
       adjust(accAccessSrc, accAccessDest, amount)
-        .guarantee(release(accAccessSrc, accAccessDest).map(_ => ()))
+        .guarantee(release(accAccessSrc, accAccessDest).void)
     }
   } yield transferResult
 
