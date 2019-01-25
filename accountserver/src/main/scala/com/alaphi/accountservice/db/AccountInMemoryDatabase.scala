@@ -30,8 +30,8 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
         storage.update(accAccMap =>
           accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accountDeposit))
         ).map(_ => Right(DepositSuccess(accountDeposit, amount)))
+          .guarantee(accAccess.releaseAccount.map(_ => ()))
       }
-    _ <- EitherT.right(accAccess.releaseAccount)
   } yield depositResult
 
   def transfer(srcAccNum: String, destAccNum: String, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
@@ -41,12 +41,18 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
     _ <- EitherT.right(accAccessDest.isAvailable.map(avail => println(s"transfer dest $destAccNum, accAccessDest.isAvailable: $avail")))
     _ <- EitherT.right(accAccessSrc.acquireAccount)
     _ <- EitherT.right(accAccessDest.acquireAccount)
-    transferResult <- adjust(accAccessSrc, accAccessDest, amount)
-    _ <- EitherT.right(accAccessSrc.releaseAccount)
-    _ <- EitherT.right(accAccessDest.releaseAccount)
+    transferResult <- EitherT {
+      adjust(accAccessSrc, accAccessDest, amount)
+        .guarantee(release(accAccessSrc, accAccessDest).map(_ => ()))
+    }
   } yield transferResult
 
-  private def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): EitherT[IO, TransferFailed, TransferSuccess] = EitherT {
+  private def release(accAccessSrc: AccountAccess, accAccessDest: AccountAccess) = for {
+    src <- accAccessSrc.releaseAccount
+    dest <-  accAccessDest.releaseAccount
+  } yield (src, dest)
+
+  private def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): IO[Either[AccountError, TransferSuccess]] =
     if (accAccessSrc.account.balance >= amount) {
       val accDebit = accAccessSrc.account.copy(balance = accAccessSrc.account.balance - amount)
       val accCredit = accAccessDest.account.copy(balance = accAccessDest.account.balance + amount)
@@ -57,7 +63,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
       ).map(_ => Right(TransferSuccess(accDebit, accCredit, amount)))
     } else
       IO(Left(TransferFailed(accAccessSrc.account, accAccessDest.account, amount, s"Not enough funds available in account number: ${accAccessSrc.account.accNumber}")))
-  }
+
 
   private def getAccountAccess(accountNumber: String): EitherT[IO, AccountError, AccountAccess] = EitherT {
     storage.get.map(_.get(accountNumber).toRight[AccountError](AccountNotFound(accountNumber, s"Account Number doesn't exist: $accountNumber")))
