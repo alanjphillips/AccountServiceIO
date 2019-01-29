@@ -4,5 +4,5 @@ project/project/
 project/target/
 sources/
 target/
-/accountserver/accountserver.iml
-/accounttxlog/accounttxlog.iml
+**/*.iml
+
