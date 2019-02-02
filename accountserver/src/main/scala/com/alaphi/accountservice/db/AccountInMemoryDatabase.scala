@@ -2,7 +2,7 @@ package com.alaphi.accountservice.db
 
 import cats.data.EitherT
 import cats.implicits._
-import cats.effect.{Concurrent, ContextShift, IO}
+import cats.effect.{Concurrent, ContextShift, IO, Sync}
 import cats.effect.concurrent.{Ref, Semaphore}
 import com.alaphi.accountservice.model.Account._
 
@@ -23,50 +23,64 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
 
   def deposit(accountNumber: String, amount: Int): EitherT[IO, AccountError, DepositSuccess] = for {
     accAccess <- getAccountAccess(accountNumber)
-    _ <- EitherT.right(accAccess.acquireAccount)
-    accountDeposit = accAccess.account.copy(balance = accAccess.account.balance + amount)
     depositResult <-
-      EitherT[IO, AccountError, DepositSuccess] {
-        storage.update(accAccMap =>
-          accAccMap.updated(accAccess.account.accNumber, accAccess.copy(account = accountDeposit))
-        ).map(_ => Right(DepositSuccess(accountDeposit, amount)))
-          .guarantee(release(accAccess).void)
-      }
+      EitherT[IO, AccountError, DepositSuccess](
+        Sync[IO].bracket(acquire(accAccess).void)(_ => persistDeposit(accAccess, amount))(_ => release(accAccess).void)
+      )
   } yield depositResult
 
   def transfer(srcAccNum: String, destAccNum: String, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
     accAccessSrc <- getAccountAccess(srcAccNum)
     accAccessDest <- getAccountAccess(destAccNum)
-    _ <- EitherT.right(accAccessSrc.acquireAccount)
-    _ <- EitherT.right(accAccessDest.acquireAccount)
-    transferResult <- EitherT {
-      adjust(accAccessSrc, accAccessDest, amount)
-        .guarantee(release(accAccessSrc, accAccessDest).void)
-    }
+    transferResult <- EitherT(
+      Sync[IO].bracket(acquire(accAccessSrc, accAccessDest))(_ => persistTransfer(accAccessSrc, accAccessDest, amount))(_ => release(accAccessSrc, accAccessDest).void)
+    )
   } yield transferResult
 
-  private def adjust(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): IO[Either[AccountError, TransferSuccess]] =
+  private def persistDeposit(accAccess: AccountAccess, amount: Int): IO[Either[AccountError, DepositSuccess]] = {
+    val accountDeposit = plusBalance(accAccess.account, amount)
+    updateStorage(accAccess, accountDeposit)
+      .map(_ => Right(DepositSuccess(accountDeposit, amount)))
+  }
+
+  private def persistTransfer(accAccessSrc: AccountAccess, accAccessDest: AccountAccess, amount: Int): IO[Either[AccountError, TransferSuccess]] =
     if (accAccessSrc.account.balance >= amount) {
-      val accDebit = accAccessSrc.account.copy(balance = accAccessSrc.account.balance - amount)
-      val accCredit = accAccessDest.account.copy(balance = accAccessDest.account.balance + amount)
-      storage.update(accAccMap =>
-        accAccMap
-          .updated(accAccessSrc.account.accNumber, accAccessSrc.copy(account = accDebit))
-          .updated(accAccessDest.account.accNumber, accAccessDest.copy(account = accCredit))
-      ).map(_ => Right(TransferSuccess(accDebit, accCredit, amount)))
+      val accDebit = minusBalance(accAccessSrc.account, amount)
+      val accCredit = plusBalance(accAccessDest.account, amount)
+      for {
+        _ <- updateStorage(accAccessSrc, accDebit)
+        _ <- updateStorage(accAccessDest, accCredit)
+      } yield Right(TransferSuccess(accDebit, accCredit, amount))
     } else
-      IO(Left(TransferFailed(accAccessSrc.account, accAccessDest.account, amount, s"Not enough funds available in account number: ${accAccessSrc.account.accNumber}")))
+      IO.pure(Left(TransferFailed(accAccessSrc.account, accAccessDest.account, amount, s"Not enough funds available in account number: ${accAccessSrc.account.accNumber}")))
+
+  private def acquire(accAccess: AccountAccess*): IO[List[Account]] =
+    accAccess.toList.map(_.acquireAccount).sequence
 
   private def release(accAccess: AccountAccess*): IO[List[Account]] =
     accAccess.toList.map(_.releaseAccount).sequence
 
   private def getAccountAccess(accountNumber: String): EitherT[IO, AccountError, AccountAccess] = EitherT {
-    storage.get.map(_.get(accountNumber).toRight[AccountError](AccountNotFound(accountNumber, s"Account Number doesn't exist: $accountNumber")))
+    storage.get
+      .map(_.get(accountNumber).toRight[AccountError](AccountNotFound(accountNumber, s"Account Number doesn't exist: $accountNumber")))
   }
+
+  private def updateStorage(accAccess: AccountAccess, updatedAccount: Account): IO[Unit] =
+    storage.update(accAccMap =>
+      accAccMap.updated(
+        accAccess.account.accNumber,
+        accAccess.copy(account = updatedAccount)
+      )
+    )
 
   private def generateAccountNumber: IO[String] =
     storage.get.map(accounts => (accounts.size + 1).toString)
 
+  private def plusBalance(account: Account, plusAmount: Int) =
+    account.copy(balance = account.balance + plusAmount)
+
+  private def minusBalance(account: Account, minusAmount: Int) =
+    account.copy(balance = account.balance - minusAmount)
 }
 
 object AccountInMemoryDatabase {
