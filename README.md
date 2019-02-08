@@ -1,7 +1,11 @@
 Scala, Http4s, Cats-Effect
-
-
-Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[IO]
++
+Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[IO] in AccountInMemoryDatabase
++
+Kafka Consumer (FS2 + Apache Kafka Consumer)
+Kafka Publisher (IO Async + Apache Kafka Publisher)
++
+TODO NEXT Kafka Circe Serializers/Deserializers 
 
 
 - The following links describe the API calls. Use a Rest client such as Postman on Chrome.
