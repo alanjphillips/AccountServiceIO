@@ -6,22 +6,23 @@ import fs2._
 import cats.effect._
 
 import scala.collection.JavaConverters._
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer => ApacheKafkaConsumer}
+import org.apache.kafka.common.serialization.Deserializer
 
-class KafkaFs2Consumer(consumer: KafkaConsumer[String, String]) {
+class KafkaConsumer[K, V](consumer: ApacheKafkaConsumer[K, V]) {
 
-  def subscribe(topics: Seq[String]): Stream[IO, String] =
+  def subscribe(topics: Seq[String]): Stream[IO, V] =
     Stream.eval_(subscribeViaKafkaConsumer(topics)) ++ pollStream
 
   private def subscribeViaKafkaConsumer(topics: Seq[String]): IO[Unit] = IO {
     consumer.subscribe(topics.toList.asJava)
   }
 
-  private def poll: IO[ConsumerRecords[String, String]] = IO {
+  private def poll: IO[ConsumerRecords[K, V]] = IO {
     consumer.poll(Long.MaxValue)
   }
 
-  private def pollStream: Stream[IO, String] =
+  private def pollStream: Stream[IO, V] =
     Stream.repeatEval(poll)
       .filter(_.count > 0)
       .flatMap { consumerRecords =>
@@ -32,14 +33,12 @@ class KafkaFs2Consumer(consumer: KafkaConsumer[String, String]) {
       }
 }
 
-object KafkaFs2Consumer {
+object KafkaConsumer {
 
-  def apply(props: Properties): KafkaFs2Consumer =
-    new KafkaFs2Consumer(
-      new KafkaConsumer[String, String](props)
+  def apply[K, V](props: Properties, keyDeserializer: Deserializer[K], valueDeserializer: Deserializer[V]): KafkaConsumer[K, V] =
+    new KafkaConsumer(
+      new ApacheKafkaConsumer[K, V](props, keyDeserializer, valueDeserializer)
     )
-
-  def apply: KafkaFs2Consumer = KafkaFs2Consumer(KafkaProperties.default)
 
 }
 
