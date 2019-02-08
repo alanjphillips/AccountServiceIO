@@ -4,12 +4,13 @@ import java.util.Properties
 
 import fs2._
 import cats.effect._
+
 import scala.collection.JavaConverters._
-import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer}
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer}
 
 class KafkaFs2Consumer(consumer: KafkaConsumer[String, String]) {
 
-  def subscribe(topics: Seq[String])(implicit F: ConcurrentEffect[IO], cs: ContextShift[IO]): Stream[IO, String] =
+  def subscribe(topics: Seq[String]): Stream[IO, String] =
     Stream.eval_(subscribeViaKafkaConsumer(topics)) ++ pollStream
 
   private def subscribeViaKafkaConsumer(topics: Seq[String]): IO[Unit] = IO {
@@ -32,11 +33,33 @@ class KafkaFs2Consumer(consumer: KafkaConsumer[String, String]) {
 }
 
 object KafkaFs2Consumer {
+
   def apply(props: Properties): KafkaFs2Consumer =
     new KafkaFs2Consumer(
       new KafkaConsumer[String, String](props)
     )
 
+  def apply: KafkaFs2Consumer = KafkaFs2Consumer(KafkaProperties.default)
+
+}
+
+object KafkaProperties {
+  val default = {
+    val props = new Properties()
+    props.putAll(
+      Map(
+        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> "kafka-1:9092",
+        ConsumerConfig.GROUP_ID_CONFIG -> "streamgroup",
+        ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> "true",
+        ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG -> "1000",
+        ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG -> "300000",
+        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> "org.apache.kafka.common.serialization.StringDeserializer",
+        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> "org.apache.kafka.common.serialization.StringDeserializer",
+        ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
+      ).asJava
+    )
+    props
+  }
 }
 
 
