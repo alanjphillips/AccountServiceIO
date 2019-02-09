@@ -6,7 +6,7 @@ import fs2._
 import cats.effect._
 
 import scala.collection.JavaConverters._
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer => ApacheKafkaConsumer}
+import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer => ApacheKafkaConsumer}
 import org.apache.kafka.common.serialization.Deserializer
 
 class KafkaConsumer[K, V](consumer: ApacheKafkaConsumer[K, V]) {
@@ -40,21 +40,6 @@ object KafkaConsumer {
       new ApacheKafkaConsumer[K, V](props, keyDeserializer, valueDeserializer)
     )
 
-}
-
-object KafkaProperties {
-  val default = {
-    val props = new Properties()
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka-1:9092")
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "streamgroup")
-    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true")
-    props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000")
-    props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "300000")
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-    props
-  }
 }
 
 

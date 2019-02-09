@@ -1,7 +1,10 @@
 package com.alaphi.accountservice.kafka.fs2
 
+import java.util.Properties
+
 import cats.effect.IO
 import org.apache.kafka.clients.producer.{ProducerRecord, RecordMetadata, KafkaProducer => ApacheKafkaProducer}
+import org.apache.kafka.common.serialization.Serializer
 
 class KafkaPublisher[K, V](producer: ApacheKafkaProducer[K, V]) {
 
@@ -15,5 +18,14 @@ class KafkaPublisher[K, V](producer: ApacheKafkaProducer[K, V]) {
         )
       )
     }
+
+}
+
+object KafkaPublisher {
+
+  def apply[K, V](props: Properties, keySerializer: Serializer[K], valueSerializer: Serializer[V]): KafkaPublisher[K, V] =
+    new KafkaPublisher(
+      new ApacheKafkaProducer[K, V](props, keySerializer, valueSerializer)
+    )
 
 }
