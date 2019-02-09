@@ -1,10 +1,15 @@
-Scala, Http4s, Cats-Effect
+Scala, Http4s, Cats-Effect, FS2, Kafka
+
+Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[IO] in AccountInMemoryDatabase
+
+Kafka Consumer (FS2 + Apache Kafka Consumer)
+
+Kafka Publisher (IO Async + Apache Kafka Publisher)
+
+TODO NEXT Kafka Circe Serializers/Deserializers 
 
 
-Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[IO]
-
-
-- The following links describe the API calls. Use a Rest client such as Postman on Chrome.
+The following links describe the API calls. Use a Rest client such as Postman on Chrome.
 
 [Create Account](#create-an-account-to-be-source-of-the-money-transfer)
 
