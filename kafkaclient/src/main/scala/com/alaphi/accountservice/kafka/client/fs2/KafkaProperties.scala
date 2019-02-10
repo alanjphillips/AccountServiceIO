@@ -1,4 +1,4 @@
-package com.alaphi.accountservice.kafka.fs2
+package com.alaphi.accountservice.kafka.client.fs2
 
 import java.util.Properties
 
