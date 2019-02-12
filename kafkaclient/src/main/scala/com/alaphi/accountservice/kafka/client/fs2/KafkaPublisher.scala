@@ -12,6 +12,8 @@ trait KafkaPublisher[K, V] {
 
 object KafkaPublisher {
 
+  class PublishException extends RuntimeException
+
   def mkKafkaPublisher[K, V](props: Properties, keySerializer: Serializer[K], valueSerializer: Serializer[V]): KafkaPublisher[K, V] =
     new KafkaPublisher[K, V] {
       val underlyingProducer = new ApacheKafkaProducer[K, V](props, keySerializer, valueSerializer)
@@ -21,7 +23,7 @@ object KafkaPublisher {
           underlyingProducer.send(record, (metadata: RecordMetadata, exception: Exception) =>
             cb(
               Option(metadata)
-                .toRight(exception)
+                .toRight(Option(exception).getOrElse(new PublishException))
                 .map(meta => Some(meta))
             )
           )
