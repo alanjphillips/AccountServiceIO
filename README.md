@@ -22,6 +22,18 @@ The following links describe the API calls. Use a Rest client such as Postman on
 [Get single Account](#get-an-account)
 
 
+Run:
+
+> docker-machine start default
+
+> eval "$(docker-machine env default)"
+
+> sbt clean docker:publishLocal
+
+> docker-compose up
+
+
+
 ***
 ### Create an account to be source of the money transfer:
 ***
