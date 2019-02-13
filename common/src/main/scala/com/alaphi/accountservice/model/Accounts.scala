@@ -1,6 +1,6 @@
 package com.alaphi.accountservice.model
 
-object Account {
+object Accounts {
 
   trait Payload
 

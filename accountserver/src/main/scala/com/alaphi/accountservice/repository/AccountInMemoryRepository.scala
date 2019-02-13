@@ -2,7 +2,7 @@ package com.alaphi.accountservice.repository
 
 import cats.effect.IO
 import com.alaphi.accountservice.db.AccountInMemoryDatabase
-import com.alaphi.accountservice.model.Account._
+import com.alaphi.accountservice.model.Accounts._
 
 class AccountInMemoryRepository(db: AccountInMemoryDatabase) extends AccountRepository {
 

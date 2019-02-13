@@ -4,7 +4,7 @@ import cats.data.EitherT
 import cats.implicits._
 import cats.effect.{Concurrent, ContextShift, IO, Sync}
 import cats.effect.concurrent.{Ref, Semaphore}
-import com.alaphi.accountservice.model.Account._
+import com.alaphi.accountservice.model.Accounts._
 
 class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess]])(implicit ctx: ContextShift[IO]) {
 

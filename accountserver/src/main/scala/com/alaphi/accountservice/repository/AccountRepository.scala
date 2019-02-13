@@ -1,7 +1,7 @@
 package com.alaphi.accountservice.repository
 
 import cats.effect.IO
-import com.alaphi.accountservice.model.Account._
+import com.alaphi.accountservice.model.Accounts._
 
 trait AccountRepository {
   def create(accountCreation: AccountCreation): IO[Account]
