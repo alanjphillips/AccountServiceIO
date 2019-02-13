@@ -41,11 +41,11 @@ lazy val common = (project in file("common"))
 
 lazy val accountServer = (project in file("accountserver"))
   .enablePlugins(JavaAppPackaging, DockerPlugin, AshScriptPlugin)
-  .dependsOn(common)
+  .dependsOn(common, kafkaClient, kafkaSerdes)
   .settings(dockerSettings)
 
 lazy val kafkaClient = (project in file("kafkaclient"))
-  .dependsOn(common)
+  .dependsOn(common, kafkaSerdes)
   .settings(dockerSettings)
 
 lazy val kafkaSerdes = (project in file("kafkaserdes"))

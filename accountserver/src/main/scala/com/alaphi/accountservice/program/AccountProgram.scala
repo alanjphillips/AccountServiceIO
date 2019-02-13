@@ -1,19 +1,24 @@
 package com.alaphi.accountservice.program
 
 import cats.effect.{IO, Timer}
+import com.alaphi.accountservice.kafka.client.fs2.KafkaPublisher
 import com.alaphi.accountservice.model.Account._
 import com.alaphi.accountservice.repository.AccountRepository
 import com.alaphi.accountservice.resilience.Retry.retryWithBackoff
+
 import scala.concurrent.duration._
 
-class AccountProgram(accountRepository: AccountRepository)(implicit timer: Timer[IO]) extends AccountAlgebra {
+class AccountProgram(accountRepository: AccountRepository,
+                     kafkaPublisher: KafkaPublisher[String, Payload])
+                    (implicit timer: Timer[IO]) extends AccountAlgebra {
 
-  def create(accountCreation: AccountCreation): IO[Account] =
-    retryWithBackoff(
+  def create(accountCreation: AccountCreation): IO[Account] = for {
+    account <- retryWithBackoff(
       accountRepository.create(accountCreation),
       initialDelay = 1 second,
-      maxRetries = 3
-    )
+      maxRetries = 3)
+    _ <- kafkaPublisher.send("accountcreated", account.accNumber, accountCreation)
+  } yield account
 
   def read(accountNumber: String): IO[Either[AccountError, Account]] =
     accountRepository.read(accountNumber)

@@ -6,7 +6,7 @@ Kafka Consumer (FS2 + Apache Kafka Consumer)
 
 Kafka Publisher (IO Async + Apache Kafka Publisher)
 
-TODO NEXT Kafka Circe Serializers/Deserializers 
+Kafka Circe Serializers/Deserializers
 
 
 The following links describe the API calls. Use a Rest client such as Postman on Chrome.
