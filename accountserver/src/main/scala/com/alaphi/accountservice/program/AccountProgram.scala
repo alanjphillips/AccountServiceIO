@@ -30,13 +30,17 @@ class AccountProgram(accountRepository: AccountRepository,
   def deposit(accountNumber: String, deposit: Deposit): IO[Either[AccountError, DepositSuccess]] =
     for {
       depositSuccess <- accountRepository.deposit(accountNumber, deposit.depositAmount)
-      _ = depositSuccess.map(depSuccess => kafkaPublisher.send("deposit", accountNumber, depSuccess))
+      _ <- depositSuccess.fold(
+        e => IO.pure(Left(e)),
+        depSuccess => kafkaPublisher.send("deposit", accountNumber, depSuccess))
     } yield depositSuccess
 
   def transfer(accountNumber: String, transfer: MoneyTransfer): IO[Either[AccountError, TransferSuccess]] =
     for {
       transferSuccess <- accountRepository.transfer(accountNumber, transfer.destAccNum, transfer.transferAmount)
-      _ = transferSuccess.map(txSuccess => kafkaPublisher.send("transfer", accountNumber, txSuccess))
+      _ <- transferSuccess.fold(
+        e => IO.pure(Left(e)),
+        txSuccess => kafkaPublisher.send("transfer", accountNumber, txSuccess))
     } yield transferSuccess
 
 }
