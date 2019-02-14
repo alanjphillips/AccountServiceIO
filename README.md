@@ -1,4 +1,6 @@
-Scala, Http4s, Cats-Effect, FS2, Kafka
+***
+### Scala, Http4s, Cats-Effect, FS2, Kafka
+***
 
 Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[IO] in AccountInMemoryDatabase
 

@@ -44,6 +44,11 @@ lazy val accountServer = (project in file("accountserver"))
   .dependsOn(common, kafkaClient, kafkaSerdes)
   .settings(dockerSettings)
 
+lazy val accountTxLog = (project in file("accounttxlog"))
+  .enablePlugins(JavaAppPackaging, DockerPlugin, AshScriptPlugin)
+  .dependsOn(common, kafkaClient, kafkaSerdes)
+  .settings(dockerSettings)
+
 lazy val kafkaClient = (project in file("kafkaclient"))
   .dependsOn(common, kafkaSerdes)
   .settings(dockerSettings)
