@@ -9,6 +9,21 @@ Kafka Publisher (IO Async + Apache Kafka Publisher)
 Kafka Circe Serializers/Deserializers
 
 
+
+***
+### Run using docker-compose:
+***
+```
+> docker-machine start default
+
+> eval "$(docker-machine env default)"
+
+> sbt clean docker:publishLocal
+
+> docker-compose up
+```
+
+
 The following links describe the API calls. Use a Rest client such as Postman on Chrome.
 
 [Create Account](#create-an-account-to-be-source-of-the-money-transfer)
@@ -20,18 +35,6 @@ The following links describe the API calls. Use a Rest client such as Postman on
 [Get all Accounts](#get-all-accounts)
 
 [Get single Account](#get-an-account)
-
-
-Run:
-
-> docker-machine start default
-
-> eval "$(docker-machine env default)"
-
-> sbt clean docker:publishLocal
-
-> docker-compose up
-
 
 
 ***
