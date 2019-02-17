@@ -2,11 +2,13 @@
 ### Scala, Http4s, Cats-Effect, FS2, Kafka
 ***
 
+Http Server (Http4s + Circe). Publishes to Kafka topics
+
 Basic Account level locking for updates using Cats-Effect Ref[IO] and Semaphore[IO] in AccountInMemoryDatabase
 
-Kafka Consumer (FS2 + Apache Kafka Consumer)
+Kafka Consumer (FS2 + Apache Kafka Consumer + Circe Decoding)
 
-Kafka Publisher (IO Async + Apache Kafka Publisher)
+Kafka Publisher (IO Async + Apache Kafka Publisher + Circe Encoding)
 
 Kafka Circe Serializers/Deserializers
 
