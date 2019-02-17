@@ -1,13 +1,13 @@
 package com.alaphi.accountservice.kafka.client.fs2
 
 import java.util.Properties
-
+import io.circe.Decoder
 import fs2._
 import cats.effect._
 
 import scala.collection.JavaConverters._
 import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer => ApacheKafkaConsumer}
-import org.apache.kafka.common.serialization.Deserializer
+import com.alaphi.accountservice.kafka.serdes.circe.Serdes.deserializer
 
 trait KafkaConsumer[K, V] {
   def subscribe(topics: Seq[String]): Stream[IO, V]
@@ -15,9 +15,9 @@ trait KafkaConsumer[K, V] {
 
 object KafkaConsumer {
 
-  def mkKafkaConsumer[K, V](props: Properties, keyDeserializer: Deserializer[K], valueDeserializer: Deserializer[V]): KafkaConsumer[K, V] =
+  def mkKafkaConsumer[K: Decoder, V: Decoder](props: Properties): KafkaConsumer[K, V] =
     new KafkaConsumer[K, V] {
-      val underlyingConsumer = new ApacheKafkaConsumer[K, V](props, keyDeserializer, valueDeserializer)
+      val underlyingConsumer = new ApacheKafkaConsumer[K, V](props, deserializer[K], deserializer[V])
 
       override def subscribe(topics: Seq[String]): Stream[IO, V] =
         Stream.eval_(subscribeViaKafkaConsumer(topics)) ++ pollStream

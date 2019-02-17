@@ -34,7 +34,7 @@ lazy val dockerSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(common, accountServer, kafkaClient, kafkaSerdes)
+  .aggregate(common, accountServer, accountTxLog, kafkaClient, kafkaSerdes)
 
 lazy val common = (project in file("common"))
   .settings(commonSettings)

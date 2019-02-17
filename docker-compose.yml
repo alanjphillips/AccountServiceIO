@@ -26,3 +26,8 @@ services:
     depends_on:
     - kafka-1
 
+  account-tx-log:
+    image: accounttxlog:latest
+    depends_on:
+      - kafka-1
+      - account-server

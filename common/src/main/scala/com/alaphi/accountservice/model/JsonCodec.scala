@@ -1,8 +1,9 @@
 package com.alaphi.accountservice.model
 
+import cats.syntax.functor._
 import com.alaphi.accountservice.model.Accounts._
 import io.circe.generic.auto._
-import io.circe.{Encoder, Json}
+import io.circe.{Decoder, Encoder}
 import io.circe.syntax._
 
 object JsonCodec {
@@ -14,4 +15,10 @@ object JsonCodec {
     case transfer @ TransferSuccess(_, _, _) => transfer.asJson
   }
 
+  implicit val decodePayload: Decoder[Payload] =
+    List[Decoder[Payload]](
+      Decoder[Account].widen,
+      Decoder[DepositSuccess].widen,
+      Decoder[TransferSuccess].widen
+    ).reduceLeft(_ or _)
 }
