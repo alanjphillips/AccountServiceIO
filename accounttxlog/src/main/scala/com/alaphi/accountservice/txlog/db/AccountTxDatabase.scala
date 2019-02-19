@@ -10,7 +10,11 @@ class AccountTxDatabase private(storage: Ref[IO, Seq[Payload]]) {
     storage.update(logStore => logStore :+ tx)
 
   def read(offset: Int): IO[Payload] =
-    storage.get.map(logStore => logStore(offset))
+    storage.get.flatMap { logStore =>
+      if (offset < logStore.size)
+       IO.pure(logStore(offset))
+      else IO.raiseError(new IndexOutOfBoundsException)
+    }
 
 }
 
