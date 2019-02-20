@@ -16,6 +16,8 @@ class AccountTxDatabase private(storage: Ref[IO, Seq[Payload]]) {
       else IO.raiseError(new IndexOutOfBoundsException)
     }
 
+  def readAll: IO[Seq[Payload]] = storage.get
+
 }
 
 object AccountTxDatabase {

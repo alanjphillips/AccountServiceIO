@@ -18,7 +18,9 @@ object AccountTransactionLog extends IOApp {
       accountTransactionConsumer = mkKafkaConsumer[String, Payload](default)
       txConsumer = accountTransactionConsumer
         .subscribe(topics)
-        .map(txLogDB.append)
+        .evalMap(txLogDB.append)
+        .evalMap(_ => txLogDB.readAll)
+        .evalMap(t => IO(println(s"Stored Transactions: $t")))
         .compile
         .drain
       exitcode <- txConsumer.as(ExitCode.Success)
