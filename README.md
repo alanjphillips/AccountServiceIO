@@ -45,6 +45,8 @@ Kafka Circe Serializers/Deserializers
 > echo "$MESSAGE" | kafka-console-producer --broker-list wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic
 
 > kafka-console-consumer --bootstrap-server wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic --from-beginning
+
+> kubectl get pods --all-namespaces # See status of kafka, zk, and kafka-client pods
 ```
 
 ***
