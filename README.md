@@ -12,7 +12,40 @@ Kafka Publisher (IO Async + Apache Kafka Publisher + Circe Encoding)
 
 Kafka Circe Serializers/Deserializers
 
+***
+### Kubernetes / Minikube / Helm Charts Kafka setup and topic test guide
+***
+```
+> minikube start
 
+> helm init
+
+> kubectl create serviceaccount --namespace kube-system tiller
+
+> kubectl create clusterrolebinding tiller-cluster-rule \
+   --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+
+> kubectl patch deploy --namespace kube-system tiller-deploy \
+   -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+
+> cd Development/projects/  # cp-helm-charts cloned from github to this folder, left only kafka and zookeeper enabled in values.yaml
+
+> helm install cp-helm-charts  # wanton-tarsier = release name in this example
+
+> helm status wanton-tarsier
+
+> kubectl create -f cp-helm-charts/examples/kafka-client.yaml # See output of helm status for kafka-client.yaml file content and save to local
+
+> kubectl exec -it kafka-client -- /bin/bash
+
+> kafka-topics --zookeeper wanton-tarsier-cp-zookeeper-headless:2181 --topic wanton-tarsier-topic --create --partitions 1 --replication-factor 1 --if-not-exists
+
+> kafka-topics --list --zookeeper wanton-tarsier-cp-zookeeper-headless:2181
+
+> echo "$MESSAGE" | kafka-console-producer --broker-list wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic
+
+> kafka-console-consumer --bootstrap-server wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic --from-beginning
+```
 
 ***
 ### Run using docker-compose:
@@ -27,8 +60,9 @@ Kafka Circe Serializers/Deserializers
 > docker-compose up
 ```
 
-
-The following links describe the API calls. Use a Rest client such as Postman on Chrome.
+***
+### The following links describe the API calls. Use a Rest client such as Postman on Chrome.
+***
 
 [Create Account](#create-an-account-to-be-source-of-the-money-transfer)
 
