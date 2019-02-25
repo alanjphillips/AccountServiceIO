@@ -31,6 +31,7 @@ Kafka Circe Serializers/Deserializers
 > cd Development/projects/  # cp-helm-charts cloned from github to this folder, left only kafka and zookeeper enabled in values.yaml
 
 > helm install cp-helm-charts  # wanton-tarsier = release name in this example
+> helm install ./accountchart
 
 > helm status wanton-tarsier
 
@@ -42,7 +43,7 @@ Kafka Circe Serializers/Deserializers
 
 > kafka-topics --list --zookeeper wanton-tarsier-cp-zookeeper-headless:2181
 
-> echo "$MESSAGE" | kafka-console-producer --broker-list wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic
+> echo "MESSAGE1" | kafka-console-producer --broker-list wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic
 
 > kafka-console-consumer --bootstrap-server wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic --from-beginning
 
