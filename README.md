@@ -28,24 +28,27 @@ Kafka Circe Serializers/Deserializers
 > kubectl patch deploy --namespace kube-system tiller-deploy \
    -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 
-> cd Development/projects/  # cp-helm-charts cloned from github to this folder, left only kafka and zookeeper enabled in values.yaml
+> cd to AccountServiceIO
 
-> helm install cp-helm-charts  # wanton-tarsier = release name in this example
-> helm install ./accountchart
+> eval $(minikube docker-env)
 
-> helm status wanton-tarsier
+> sbt clean docker:publishLocal
 
-> kubectl create -f cp-helm-charts/examples/kafka-client.yaml # See output of helm status for kafka-client.yaml file content and save to local
+> helm install --name account ./accountchart
+
+> helm status account
+
+> kubectl create -f accountchart/clients/kafka-client.yaml # See output of helm status for kafka-client.yaml file content and save to local
 
 > kubectl exec -it kafka-client -- /bin/bash
 
-> kafka-topics --zookeeper wanton-tarsier-cp-zookeeper-headless:2181 --topic wanton-tarsier-topic --create --partitions 1 --replication-factor 1 --if-not-exists
+> kafka-topics --zookeeper account-cp-zookeeper-headless:2181 --topic account-topic --create --partitions 1 --replication-factor 1 --if-not-exists
 
-> kafka-topics --list --zookeeper wanton-tarsier-cp-zookeeper-headless:2181
+> kafka-topics --list --zookeeper account-cp-zookeeper-headless:2181
 
-> echo "MESSAGE1" | kafka-console-producer --broker-list wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic
+> echo "MESSAGE1" | kafka-console-producer --broker-list account-cp-kafka-headless:9092 --topic account-topic
 
-> kafka-console-consumer --bootstrap-server wanton-tarsier-cp-kafka-headless:9092 --topic wanton-tarsier-topic --from-beginning
+> kafka-console-consumer --bootstrap-server account-cp-kafka-headless:9092 --topic account-topic --from-beginning
 
 > kubectl get pods --all-namespaces # See status of kafka, zk, and kafka-client pods
 ```
