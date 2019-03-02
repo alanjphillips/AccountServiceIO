@@ -50,6 +50,8 @@ Kafka Circe Serializers/Deserializers
 
 --- In a new terminal:
 
+> eval $(minikube docker-env)
+
 > kubectl logs -f account-server  # use pod name
 
 --- In a new terminal: Create a kafka consumer on `transfer` topic. Same can be done for `account` and `deposit` topics
