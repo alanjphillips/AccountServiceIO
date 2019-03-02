@@ -38,8 +38,6 @@ Kafka Circe Serializers/Deserializers
 
 > helm status account
 
-> kubectl create -f accountchart/clients/kafka-client.yaml # See output of helm status for kafka-client.yaml file content and save to local
-
 > kubectl create -f accountchart/accountserver.yaml
 
 > kubectl create -f accountchart/accountserver-service.yaml
@@ -50,20 +48,30 @@ Kafka Circe Serializers/Deserializers
 
 > minikube service accountserver-service --url  # use this url (host:port) in rest client to make requests to accounts
 
+--- In a new terminal:
 
---- Extra: Kafka client may be useful for testing
+> kubectl logs -f account-server  # use pod name
+
+--- In a new terminal: Create a kafka consumer on `transfer` topic. Same can be done for `account` and `deposit` topics
+
+> eval $(minikube docker-env)
+
+> kubectl create -f accountchart/clients/kafka-client.yaml
 
 > kubectl exec -it kafka-client -- /bin/bash
 
-> kafka-topics --zookeeper account-cp-zookeeper-headless:2181 --topic account-topic --create --partitions 1 --replication-factor 1 --if-not-exists
-
 > kafka-topics --list --zookeeper account-cp-zookeeper-headless:2181
+
+> kafka-console-consumer --bootstrap-server account-cp-kafka-headless:9092 --topic transfer --from-beginning
+
+--- Simple Kafka test: Create a topic, publish to topic, consume from topic
+
+> kafka-topics --zookeeper account-cp-zookeeper-headless:2181 --topic account-topic --create --partitions 1 --replication-factor 1 --if-not-exists
 
 > echo "MESSAGE1" | kafka-console-producer --broker-list account-cp-kafka-headless:9092 --topic account-topic
 
 > kafka-console-consumer --bootstrap-server account-cp-kafka-headless:9092 --topic account-topic --from-beginning
 
-> kubectl get pods --all-namespaces # See status of kafka, zk, and kafka-client pods
 ```
 
 ***
