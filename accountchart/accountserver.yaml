@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: account-server
+  labels:
+    app: account-server
+spec:
+  containers:
+    - name: account-server-container
+      image: accountserver:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080

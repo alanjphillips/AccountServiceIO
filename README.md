@@ -40,6 +40,19 @@ Kafka Circe Serializers/Deserializers
 
 > kubectl create -f accountchart/clients/kafka-client.yaml # See output of helm status for kafka-client.yaml file content and save to local
 
+> kubectl create -f accountchart/accountserver.yaml
+
+> kubectl create -f accountchart/accountserver-service.yaml
+
+> kubectl get pods
+
+> kubectl get services
+
+> minikube service accountserver-service --url  # use this url (host:port) in rest client to make requests to accounts
+
+
+--- Extra: Kafka client may be useful for testing
+
 > kubectl exec -it kafka-client -- /bin/bash
 
 > kafka-topics --zookeeper account-cp-zookeeper-headless:2181 --topic account-topic --create --partitions 1 --replication-factor 1 --if-not-exists
