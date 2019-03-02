@@ -38,6 +38,8 @@ Kafka Circe Serializers/Deserializers
 
 > helm status account
 
+> kubectl create -f accountchart/accounttxlog.yaml
+
 > kubectl create -f accountchart/accountserver.yaml
 
 > kubectl create -f accountchart/accountserver-service.yaml

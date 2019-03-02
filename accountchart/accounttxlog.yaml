@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: account-tx-log
+  labels:
+    app: account-tx-log
+spec:
+  containers:
+    - name: account-tx-log-container
+      image: accounttxlog:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080
