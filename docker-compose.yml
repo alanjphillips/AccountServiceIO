@@ -29,6 +29,8 @@ services:
 
   account-tx-log:
     image: accounttxlog:latest
+    ports:
+      - "8081:8081"
     depends_on:
       - account-cp-kafka-headless
       - account-server

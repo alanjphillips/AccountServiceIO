@@ -7,6 +7,11 @@ import com.alaphi.accountservice.kafka.client.fs2.KafkaConsumer.mkKafkaConsumer
 import com.alaphi.accountservice.model.Accounts.Payload
 import com.alaphi.accountservice.model.JsonCodec.decodePayload
 import com.alaphi.accountservice.txlog.db.AccountTxDatabase
+import com.alaphi.accountservice.txlog.http.TransactionLogApi
+import com.alaphi.accountservice.txlog.program.TransactionLogProgram
+import com.alaphi.accountservice.txlog.repository.TransactionLogInMemoryRepository
+import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.implicits._
 
 object AccountTransactionLog extends IOApp {
 
@@ -15,15 +20,24 @@ object AccountTransactionLog extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     for {
       txLogDB <- AccountTxDatabase.createDB
+      txLogRepository = new TransactionLogInMemoryRepository(txLogDB)
+      txLogProgram = new TransactionLogProgram(txLogRepository)
+      txLogApi = new TransactionLogApi(txLogProgram)
       accountTransactionConsumer = mkKafkaConsumer[String, Payload](default)
-      txConsumer = accountTransactionConsumer
+      consumer = accountTransactionConsumer
         .subscribe(topics)
         .evalMap(txLogDB.append)
         .evalMap(_ => txLogDB.readAll)
         .evalMap(t => IO(println(s"Stored Transactions: $t")))
+      server = BlazeServerBuilder[IO]
+        .bindHttp(8081, "0.0.0.0")
+        .withHttpApp(txLogApi.routes.orNotFound)
+        .serve
+      exitcode <- consumer
+        .concurrently(server)
         .compile
         .drain
-      exitcode <- txConsumer.as(ExitCode.Success)
+        .as(ExitCode.Success)
     } yield exitcode
 
 }

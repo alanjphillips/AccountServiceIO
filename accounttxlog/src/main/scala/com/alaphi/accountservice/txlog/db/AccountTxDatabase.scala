@@ -18,6 +18,8 @@ class AccountTxDatabase private(storage: Ref[IO, Seq[Payload]]) {
 
   def readAll: IO[Seq[Payload]] = storage.get
 
+  def size: IO[Int] = storage.get.map(_.size)
+
 }
 
 object AccountTxDatabase {
