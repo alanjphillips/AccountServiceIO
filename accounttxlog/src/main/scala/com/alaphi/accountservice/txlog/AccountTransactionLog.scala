@@ -27,8 +27,6 @@ object AccountTransactionLog extends IOApp {
       consumer = accountTransactionConsumer
         .subscribe(topics)
         .evalMap(txLogDB.append)
-        .evalMap(_ => txLogDB.readAll)
-        .evalMap(t => IO(println(s"Stored Transactions: $t")))
       server = BlazeServerBuilder[IO]
         .bindHttp(8081, "0.0.0.0")
         .withHttpApp(txLogApi.routes.orNotFound)
