@@ -34,7 +34,7 @@ lazy val dockerSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(common, accountServer, accountTxLog, kafkaClient, kafkaSerdes)
+  .aggregate(common, accountServer, accountTxLog, accountTraffic, kafkaClient, kafkaSerdes)
 
 lazy val common = (project in file("common"))
   .settings(commonSettings)
@@ -51,7 +51,8 @@ lazy val accountTxLog = (project in file("accounttxlog"))
 
 lazy val accountTraffic = (project in file("accounttraffic"))
   .enablePlugins(JavaAppPackaging, DockerPlugin, AshScriptPlugin)
-  .dependsOn(common, kafkaClient, kafkaSerdes)
+  .dependsOn(common)
+  .settings(dockerSettings)
 
 lazy val kafkaClient = (project in file("kafkaclient"))
   .dependsOn(common, kafkaSerdes)
