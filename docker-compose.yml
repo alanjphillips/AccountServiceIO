@@ -34,3 +34,11 @@ services:
     depends_on:
       - account-cp-kafka-headless
       - account-server
+
+  account-traffic:
+    image: accounttraffic:latest
+    ports:
+      - "8082:8082"
+    depends_on:
+      - account-server
+      - account-tx-log
