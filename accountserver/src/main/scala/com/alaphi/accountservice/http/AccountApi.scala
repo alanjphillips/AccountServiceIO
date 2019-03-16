@@ -2,7 +2,7 @@ package com.alaphi.accountservice.http
 
 import cats.effect.IO
 import com.alaphi.accountservice.program.AccountAlgebra
-import com.alaphi.accountservice.http.ApiJsonCodec._
+import com.alaphi.accountservice.http.AccountJson._
 import com.alaphi.accountservice.model.Accounts.{AccountCreation, Deposit, MoneyTransfer}
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl

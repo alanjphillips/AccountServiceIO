@@ -6,7 +6,7 @@ import com.alaphi.accountservice.traffic.model.Traffic._
 import io.circe.generic.auto._
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 
-object TrafficJsonCodec {
+object TrafficJson {
   implicit val decoderTrafficCommand = jsonOf[IO, AccountTrafficCommand]
 
   implicit val encoderTrafficCommand = jsonEncoderOf[IO, AccountTrafficCommand]

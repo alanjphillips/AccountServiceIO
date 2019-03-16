@@ -7,7 +7,7 @@ import org.http4s.Uri
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.client.dsl.io._
-import com.alaphi.accountservice.traffic.http.TrafficJsonCodec.encoderAccCreate
+import com.alaphi.accountservice.traffic.http.TrafficJson.encoderAccCreate
 
 import scala.concurrent.ExecutionContext
 

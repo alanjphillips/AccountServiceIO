@@ -2,7 +2,7 @@ package com.alaphi.accountservice.traffic.http
 
 import cats.effect.IO
 import com.alaphi.accountservice.traffic.model.Traffic._
-import com.alaphi.accountservice.traffic.http.TrafficJsonCodec._
+import com.alaphi.accountservice.traffic.http.TrafficJson._
 import com.alaphi.accountservice.traffic.program.TrafficAlgebra
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl

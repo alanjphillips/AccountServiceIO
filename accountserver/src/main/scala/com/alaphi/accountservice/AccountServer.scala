@@ -7,7 +7,7 @@ import com.alaphi.accountservice.http.AccountApi
 import com.alaphi.accountservice.kafka.client.fs2.KafkaPublisher.mkKafkaPublisher
 import com.alaphi.accountservice.kafka.client.fs2.KafkaProperties.default
 import com.alaphi.accountservice.model.Accounts.Payload
-import com.alaphi.accountservice.model.JsonCodec.encodePayload
+import com.alaphi.accountservice.model.AccountsJson.encodePayload
 import com.alaphi.accountservice.program.AccountProgram
 import com.alaphi.accountservice.repository.AccountInMemoryRepository
 import org.http4s.server.blaze.BlazeServerBuilder

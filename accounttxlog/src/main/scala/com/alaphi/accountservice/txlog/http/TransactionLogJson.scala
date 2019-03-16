@@ -4,8 +4,8 @@ import cats.effect.IO
 import com.alaphi.accountservice.model.Accounts._
 import org.http4s.circe.jsonEncoderOf
 
-object TxLogJsonCodec {
-  import com.alaphi.accountservice.model.JsonCodec.encodePayload
+object TransactionLogJson {
+  import com.alaphi.accountservice.model.AccountsJson.encodePayload
 
   implicit val encoderPayloads = jsonEncoderOf[IO, Seq[Payload]]
   implicit val encoderPayload = jsonEncoderOf[IO, Payload]

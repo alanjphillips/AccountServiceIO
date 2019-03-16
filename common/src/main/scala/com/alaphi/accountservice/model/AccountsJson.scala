@@ -6,7 +6,7 @@ import io.circe.generic.auto._
 import io.circe.{Decoder, Encoder}
 import io.circe.syntax._
 
-object JsonCodec {
+object AccountsJson {
 
   implicit val encodePayload: Encoder[Payload] = Encoder.instance {
     case accountNotFound @ AccountNotFound(_, _) => accountNotFound.asJson

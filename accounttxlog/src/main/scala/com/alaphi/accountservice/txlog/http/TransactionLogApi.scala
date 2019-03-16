@@ -2,9 +2,9 @@ package com.alaphi.accountservice.txlog.http
 
 import cats.effect.IO
 import com.alaphi.accountservice.txlog.program.TransactionLogAlgebra
-import com.alaphi.accountservice.txlog.http.TxLogJsonCodec.encoderCount
-import com.alaphi.accountservice.txlog.http.TxLogJsonCodec.encoderPayloads
-import com.alaphi.accountservice.txlog.http.TxLogJsonCodec.encoderPayload
+import com.alaphi.accountservice.txlog.http.TransactionLogJson.encoderCount
+import com.alaphi.accountservice.txlog.http.TransactionLogJson.encoderPayloads
+import com.alaphi.accountservice.txlog.http.TransactionLogJson.encoderPayload
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
