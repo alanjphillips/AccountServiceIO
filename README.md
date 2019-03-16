@@ -40,6 +40,8 @@ Kafka Circe Serializers/Deserializers
 
 > kubectl create -f accountchart/accounttxlog.yaml
 
+> kubectl create -f accountchart/accounttxlog-service.yaml
+
 > kubectl create -f accountchart/accountserver.yaml
 
 > kubectl create -f accountchart/accountserver-service.yaml
