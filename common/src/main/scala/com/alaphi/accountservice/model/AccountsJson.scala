@@ -3,8 +3,8 @@ package com.alaphi.accountservice.model
 import cats.syntax.functor._
 import com.alaphi.accountservice.model.Accounts._
 import io.circe.generic.auto._
-import io.circe.{Decoder, Encoder}
 import io.circe.syntax._
+import io.circe.{Decoder, Encoder}
 
 object AccountsJson {
 
