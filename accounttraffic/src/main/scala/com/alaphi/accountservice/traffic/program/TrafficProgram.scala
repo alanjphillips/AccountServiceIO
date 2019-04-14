@@ -19,7 +19,7 @@ class TrafficProgram(client: TrafficClient) extends TrafficAlgebra {
       (1 to accountTrafficCommand.numSeedAccounts).map { accNameSuffix =>
         client.post(
           AccountCreation(s"acc_name_$accNameSuffix"),
-          Uri.uri("http://account-server:8080/accounts"))
+          Uri.uri("http://accountserver-service:8080/accounts"))
       }.toList.sequence
 
     val endTimeEpochMillis = Instant.now().toEpochMilli

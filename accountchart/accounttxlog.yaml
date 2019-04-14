@@ -10,4 +10,4 @@ spec:
       image: accounttxlog:latest
       imagePullPolicy: IfNotPresent
       ports:
-        - containerPort: 8080
+        - containerPort: 8081
