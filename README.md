@@ -16,7 +16,7 @@ Kafka Circe Serializers/Deserializers
 ### Kubernetes / Minikube / Helm Charts Kafka setup and topic test guide
 ***
 ```
-> minikube start
+> minikube start --cpus 4 --memory 8192
 
 > helm init
 
