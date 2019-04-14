@@ -13,8 +13,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object AccountTrafficGenerator extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
-    val client = BlazeClientBuilder[IO](global).resource
-    val trafficClient = new TrafficClient(client)
+    val httpClient = BlazeClientBuilder[IO](global).resource
+    val trafficClient = new TrafficClient(httpClient)
     val trafficProgram = new TrafficProgram(trafficClient)
     val trafficApi = new TrafficApi(trafficProgram)
 

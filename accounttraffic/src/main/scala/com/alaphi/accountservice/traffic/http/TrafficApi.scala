@@ -13,7 +13,7 @@ class TrafficApi(trafficAlgebra: TrafficAlgebra) extends Http4sDsl[IO] {
     case req @ POST -> Root / "accounttraffic" =>
       req.decode[AccountTrafficCommand] { trafficCommand =>
         trafficAlgebra
-          .createDepositTransfer(trafficCommand)
+          .runTraffic(trafficCommand)
           .flatMap(Created(_))
           .handleErrorWith {
             case err => BadRequest(err.getMessage)

@@ -46,6 +46,10 @@ Kafka Circe Serializers/Deserializers
 
 > kubectl create -f accountchart/accountserver-service.yaml
 
+> kubectl create -f accountchart/accounttraffic.yaml
+
+> kubectl create -f accountchart/accounttraffic-service.yaml
+
 > kubectl get pods
 
 > kubectl get services
