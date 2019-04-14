@@ -7,8 +7,6 @@ import com.alaphi.accountservice.model.Accounts.AccountCreation
 import com.alaphi.accountservice.traffic.http.TrafficClient
 import com.alaphi.accountservice.traffic.model.Traffic.{AccountTrafficCommand, AccountTrafficResult}
 import org.http4s.Uri
-import io.circe.syntax._
-import io.circe.generic.auto._
 import cats.implicits._
 
 
@@ -19,7 +17,7 @@ class TrafficProgram(client: TrafficClient) extends TrafficAlgebra {
 
     val sent =
       (1 to accountTrafficCommand.numSeedAccounts).map { accNameSuffix =>
-        client.post(AccountCreation(s"acc_name_$accNameSuffix").asJson,
+        client.post(AccountCreation(s"acc_name_$accNameSuffix"),
           Uri.uri("http://account-server:8080/accounts"))
       }.toList.sequence
 
