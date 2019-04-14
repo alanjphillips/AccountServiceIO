@@ -11,14 +11,17 @@ import io.circe.Decoder
 
 object TrafficJson {
   implicit val decoderTrafficCommand = jsonOf[IO, AccountTrafficCommand]
+  implicit val decoderAccount = jsonOf[IO, Account]
 
   implicit val encoderTrafficCommand = jsonEncoderOf[IO, AccountTrafficCommand]
   implicit val encoderTrafficResult = jsonEncoderOf[IO, AccountTrafficResult]
+  implicit val encoderAccCreate = jsonEncoderOf[IO, AccountCreation]
 
   implicit val decodePayload: Decoder[Payload] =
     List[Decoder[Payload]](
       Decoder[Account].widen
     ).reduceLeft(_ or _)
 
-  implicit val decoderPayload = jsonOf[IO, Payload]
+  implicit val decoderEntityPayload = jsonOf[IO, Payload]
+
 }

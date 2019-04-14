@@ -2,7 +2,7 @@ package com.alaphi.accountservice.traffic.model
 
 object Traffic {
 
-  case class AccountTrafficCommand(numAccounts: Long, numDepositsPerAccount: Long, numTransfersPerAccount: Long)
+  case class AccountTrafficCommand(numSeedAccounts: Int, numNewAccounts: Int, numDepositsPerAccount: Int, numTransfersPerAccount: Int)
 
   case class AccountTrafficResult(trafficDurationMillis: Long)
 
