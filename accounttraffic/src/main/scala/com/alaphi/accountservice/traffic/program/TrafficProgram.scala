@@ -18,7 +18,7 @@ class TrafficProgram(client: TrafficClient) extends TrafficAlgebra {
     val sent =
       (1 to accountTrafficCommand.numSeedAccounts).map { accNameSuffix =>
         client.post(
-          AccountCreation(s"acc_name_$accNameSuffix"),
+          AccountCreation(accHolderName =  s"acc_name_$accNameSuffix", balance = 1000),
           Uri.uri("http://accountserver-service:8080/accounts"))
       }.toList.sequence
 

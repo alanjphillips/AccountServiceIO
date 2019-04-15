@@ -4,9 +4,10 @@ import cats.data.EitherT
 import cats.implicits._
 import cats.effect.{Concurrent, ContextShift, IO, Sync}
 import cats.effect.concurrent.{Ref, Semaphore}
+import com.alaphi.accountservice.db.AccountInMemoryDatabase.AccountNumber
 import com.alaphi.accountservice.model.Accounts._
 
-class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess]])(implicit ctx: ContextShift[IO]) {
+class AccountInMemoryDatabase private(storage: Ref[IO, Map[AccountNumber, AccountAccess]])(implicit ctx: ContextShift[IO]) {
 
   def create(accountCreation: AccountCreation): IO[Account] = for {
     accountNumber <- generateAccountNumber
@@ -15,25 +16,37 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
     _ <- storage.update(_.updated(account.accNumber, accountAccess))
   } yield account
 
-  def read(accountNumber: String): EitherT[IO, AccountError, Account] =
+  def read(accountNumber: AccountNumber): EitherT[IO, AccountError, Account] =
     getAccountAccess(accountNumber).map(_.account)
 
   def readAll: IO[Seq[Account]] =
     storage.get.map(_.values.map(_.account).toSeq)
 
-  def deposit(accountNumber: String, amount: Int): EitherT[IO, AccountError, DepositSuccess] = for {
+  def deposit(accountNumber: AccountNumber, amount: Int): EitherT[IO, AccountError, DepositSuccess] = for {
     accAccess <- getAccountAccess(accountNumber)
     depositResult <-
       EitherT[IO, AccountError, DepositSuccess](
-        Sync[IO].bracket(acquire(accAccess).void)(_ => persistDeposit(accAccess, amount))(_ => release(accAccess).void)
+        Sync[IO].bracket(
+          acquire(accAccess).void
+        )(
+          _ => persistDeposit(accAccess, amount)
+        )(
+          _ => release(accAccess).void
+        )
       )
   } yield depositResult
 
-  def transfer(srcAccNum: String, destAccNum: String, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
+  def transfer(srcAccNum: AccountNumber, destAccNum: AccountNumber, amount: Int): EitherT[IO, AccountError, TransferSuccess] = for {
     accAccessSrc <- getAccountAccess(srcAccNum)
     accAccessDest <- getAccountAccess(destAccNum)
     transferResult <- EitherT(
-      Sync[IO].bracket(acquire(accAccessSrc, accAccessDest))(_ => persistTransfer(accAccessSrc, accAccessDest, amount))(_ => release(accAccessSrc, accAccessDest).void)
+      Sync[IO].bracket(
+        acquire(accAccessSrc, accAccessDest)
+      )(
+        _ => persistTransfer(accAccessSrc, accAccessDest, amount)
+      )(
+        _ => release(accAccessSrc, accAccessDest).void
+      )
     )
   } yield transferResult
 
@@ -60,7 +73,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
   private def release(accAccess: AccountAccess*): IO[List[Account]] =
     accAccess.toList.map(_.releaseAccount).sequence
 
-  private def getAccountAccess(accountNumber: String): EitherT[IO, AccountError, AccountAccess] = EitherT {
+  private def getAccountAccess(accountNumber: AccountNumber): EitherT[IO, AccountError, AccountAccess] = EitherT {
     storage.get
       .map(_.get(accountNumber).toRight[AccountError](AccountNotFound(accountNumber, s"Account Number doesn't exist: $accountNumber")))
   }
@@ -73,7 +86,7 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
       )
     )
 
-  private def generateAccountNumber: IO[String] =
+  private def generateAccountNumber: IO[AccountNumber] =
     storage.get.map(accounts => (accounts.size + 1).toString)
 
   private def plusBalance(account: Account, plusAmount: Int) =
@@ -84,8 +97,10 @@ class AccountInMemoryDatabase private(storage: Ref[IO, Map[String, AccountAccess
 }
 
 object AccountInMemoryDatabase {
+  type AccountNumber = String
+
   def createDB(implicit ctx: ContextShift[IO]): IO[AccountInMemoryDatabase] =
-    Ref.of[IO, Map[String, AccountAccess]](Map.empty[String, AccountAccess])
+    Ref.of[IO, Map[AccountNumber, AccountAccess]](Map.empty[AccountNumber, AccountAccess])
       .map(new AccountInMemoryDatabase(_))
 }
 
