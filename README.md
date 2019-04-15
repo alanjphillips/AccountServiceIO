@@ -16,6 +16,12 @@ Kafka Circe Serializers/Deserializers
 ### Kubernetes / Minikube / Helm Charts Kafka setup and topic test guide
 ***
 ```
+
+> ./start-mini-kube.sh
+
+
+Much of the following commands are executed in the convenience start-up script start-mini-kube.sh
+
 > minikube start --cpus 4 --memory 8192
 
 > helm init
